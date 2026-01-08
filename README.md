@@ -1,141 +1,152 @@
-# Simple LMS Backend Django
+# Simple LMS API (UAS Backend)
 
-Project ini merupakan aplikasi backend Learning Management System (LMS) yang dibuat untuk memenuhi Tugas UAS Backend Development. Aplikasi ini dibangun menggunakan framework Django dan Django Ninja untuk membuat REST API, serta menggunakan JWT Authentication untuk proses login dan otorisasi user. Aplikasi dijalankan menggunakan Docker agar dapat dijalankan di laptop lain tanpa konfigurasi tambahan.
+Project ini merupakan implementasi **Simple Learning Management System (LMS)** untuk memenuhi **Ujian Akhir Semester (UAS) Backend / SPAL**.  
+Aplikasi dibangun menggunakan **Django + Django Ninja**, menerapkan **JWT Authentication**, **Role Based Access Control (RBAC)**, **Redis (Cache & Session)**, dan dijalankan menggunakan **Docker Compose**.
 
-Project ini menyediakan fitur manajemen user, course, lesson, assignment, dan submission, serta dilengkapi dengan dokumentasi API menggunakan Swagger UI.
+---
 
---------------------------------------------------
+## Teknologi yang Digunakan
+- Python 3.12
+- Django
+- Django Ninja (REST API)
+- JWT Authentication
+- Redis (Cache & Session)
+- Docker & Docker Compose
+- Swagger UI (API Documentation)
 
-# 1. Tujuan Project
+---
 
-Tujuan pembuatan project ini adalah untuk:
-1. Menerapkan konsep backend menggunakan Django
-2. Membuat REST API menggunakan Django Ninja
-3. Mengimplementasikan authentication menggunakan JWT
-4. Menggunakan Docker sebagai media deployment aplikasi
-5. Menyediakan dokumentasi API yang mudah diuji
+##  Arsitektur Sistem
+Aplikasi dijalankan menggunakan **Docker Compose** dengan dua service utama:
 
---------------------------------------------------
+- **web**  
+  Backend Django API (JWT, RBAC, Redis Session)
 
-# 2. Teknologi yang Digunakan
+- **redis**  
+  Redis server untuk cache dan session backend
 
-Teknologi yang digunakan dalam project ini antara lain:
-1. Python 3.12
-2. Django 6.0
-3. Django Ninja
-4. JWT Authentication
-5. SQLite Database
-6. Docker
-7. Docker Compose
-8. Redis
+---
 
---------------------------------------------------
+##  Fitur Utama
+- Authentication menggunakan **JWT**
+- Role Based Access Control (**RBAC**) dengan role:
+  - `admin`
+  - `dosen`
+  - `mahasiswa`
+- Redis digunakan sebagai:
+  - Cache backend
+  - Session backend (**WAJIB UAS**)
+- Dokumentasi API otomatis menggunakan **Swagger UI**
 
-# 3. Struktur Project
+---
 
-Struktur folder project adalah sebagai berikut:
+##  Role & Hak Akses
+| Role | Hak Akses |
+|----|----------|
+| Admin | Kelola user dan course |
+| Dosen | Kelola course |
+| Mahasiswa | Melihat course |
 
-simple_lms_docker  
-├── docker-compose.yml  
-├── requirements.txt  
-├── README.md  
-├── docker  
-│   ├── Dockerfile  
-│   └── entrypoint.sh  
-└── app  
-    ├── manage.py  
-    ├── db.sqlite3  
-    ├── simple_lms  
-    └── lms  
+---
 
---------------------------------------------------
+## Cara Menjalankan Project
 
-# 4. Cara Menjalankan Aplikasi
+### Masuk ke folder project
+```bash
+cd simple_lms_docker
 
-Langkah-langkah untuk menjalankan aplikasi adalah sebagai berikut:
+Jalankan Docker Compose
+docker compose up -d --build
 
-1. Pastikan Docker dan Docker Compose sudah terinstall di laptop
-2. Buka folder project
-3. Jalankan perintah berikut pada terminal:
+ Pastikan Semua Service Aktif
+docker compose ps
 
-docker compose up --build
 
-4. Tunggu hingga proses build dan container selesai dijalankan
+Status yang benar:
 
---------------------------------------------------
+simple_lms_web → Up
 
-# 5. Akses Aplikasi
+simple_lms_redis → Up
 
-Setelah aplikasi berjalan, aplikasi dapat diakses melalui:
+🌐 Akses API
 
-1. Django Admin Panel  
-http://localhost:8000/admin  
+Swagger UI dapat diakses melalui:
 
-2. Dokumentasi API (Swagger UI)  
-http://localhost:8000/api/docs  
+http://localhost:8000/api/docs
 
---------------------------------------------------
+Alur Penggunaan API (WAJIB UAS)
+ Register User
 
-# 6. User dan Role
+Endpoint:
 
-Aplikasi ini menggunakan custom user dengan beberapa role, yaitu:
-1. Admin
-2. Dosen
-3. Mahasiswa
+POST /api/lms/register
 
-User dapat ditambahkan dan dikelola melalui Django Admin Panel.
 
---------------------------------------------------
+Contoh payload:
 
-# 7. Authentication JWT
+{
+  "username": "admin1",
+  "password": "admin123",
+  "email": "admin1@test.com",
+  "role": "admin"
+}
 
-Proses login dilakukan menggunakan JWT Authentication melalui endpoint:
+ Login
+
+Endpoint:
 
 POST /api/lms/login
 
-Parameter yang digunakan:
-1. username
-2. password
 
-Jika login berhasil, API akan mengembalikan token JWT yang digunakan untuk mengakses endpoint yang membutuhkan autentikasi.
+Response berhasil:
 
-Contoh response login:
 {
-  "access_token": "jwt_token",
+  "access_token": "<JWT_TOKEN>",
   "token_type": "bearer",
-  "role": "dosen"
+  "role": "admin"
 }
 
---------------------------------------------------
+ Authorize (Swagger)
 
-# 8. Endpoint API
+Klik tombol Authorize di Swagger, lalu isi:
 
-Beberapa endpoint utama yang tersedia pada aplikasi ini adalah:
+Bearer <JWT_TOKEN>
 
-1. POST /api/lms/login
-2. GET /api/lms/users
-3. GET /api/lms/courses
-4. POST /api/lms/courses
-5. GET /api/lms/lessons
-6. POST /api/lms/lessons
-7. GET /api/lms/assignments
-8. POST /api/lms/assignments
-9. GET /api/lms/submissions
-10. POST /api/lms/submissions
+ Uji RBAC
 
-Seluruh endpoint dapat diuji langsung melalui Swagger UI.
+Admin:
 
---------------------------------------------------
-
-# 9. Validasi Project
-
-Project ini telah diuji menggunakan perintah:
-
-docker compose exec web python manage.py check
-
-Hasil pengujian menunjukkan:
-System check identified no issues (0 silenced).
-
---------------------------------------------------
+GET /api/lms/users → 200 OK
 
 
+Mahasiswa:
+
+GET /api/lms/users → 403 Forbidden
+
+
+Ini membuktikan RBAC berjalan dengan benar.
+
+ Redis Session (BUKTI WAJIB UAS)
+Endpoint Test Session
+GET /api/lms/test-session
+
+
+Jika dipanggil berulang:
+
+{ "count": 1 }
+{ "count": 2 }
+{ "count": 3 }
+
+
+Menunjukkan session persisten dan tersimpan di Redis.
+
+Verifikasi Redis via Terminal
+docker compose exec redis redis-cli
+INFO keyspace
+SELECT 1
+KEYS "*"
+
+
+Contoh key session:
+
+:1:django.contrib.sessions.cachexxxxxxxx
