@@ -1,5 +1,6 @@
 from ninja import Schema
 from datetime import datetime
+from typing import Optional
 
 
 class UserSchema(Schema):
@@ -9,11 +10,21 @@ class UserSchema(Schema):
     role: str
 
 
+# ✅ WAJIB UAS: Register user
+class RegisterSchema(Schema):
+    username: str
+    password: str
+    email: Optional[str] = None
+    role: str = "mahasiswa"
+
+
 class CourseSchema(Schema):
     id: int
     title: str
     description: str
     instructor_id: int
+    # ✅ WAJIB UAS: created_at
+    created_at: datetime
 
 
 class CourseCreateSchema(Schema):
@@ -54,9 +65,13 @@ class SubmissionSchema(Schema):
     grade: int | None
     student_id: int
     assignment_id: int
+    
+    file: Optional[str] = None
 
 
 class SubmissionCreateSchema(Schema):
     answer: str
     student_id: int
     assignment_id: int
+    # optional: kalau nanti kamu bikin endpoint upload, field ini bisa dipakai sebagai path
+    file: Optional[str] = None

@@ -20,6 +20,8 @@ class Course(models.Model):
     instructor = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="courses_taught"
     )
+    # ✅ WAJIB UAS
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
@@ -49,8 +51,12 @@ class Submission(models.Model):
     assignment = models.ForeignKey(
         Assignment, on_delete=models.CASCADE, related_name="submissions"
     )
-    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name="submissions")
+    student = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="submissions"
+    )
     answer = models.TextField()
+    
+    file = models.FileField(upload_to="submissions/", null=True, blank=True)
     grade = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
